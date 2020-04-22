@@ -75,8 +75,17 @@
 	(Concept "lime")
 	(Concept "apple"))
 
+(ListLink
+         (Number 3)
+         (Number 10))
+(ListLink
+         (Number 3)
+         (Number 10)
+         (Number 40))
+
 ;; Two different re-write rules. The first rule, immediately below,
 ;; says "I * you" -> "I * you too".
+
 (define glob-you
 	(BindLink
 		(ListLink
@@ -383,3 +392,103 @@
 			(GlobNode "star")
 			(ConceptNode "j")
 			(ConceptNode "k"))))
+
+(define glob-simple
+    (BindLink
+        (ListLink
+             (Number 40)
+             (Number 3)
+             (Number 10))
+
+        (PlusLink
+            (Number 3)
+            (Number 15))))
+
+// This is ment to test glob nodes found under
+// QuoteLink. The globe node should be grounded
+// and subsituted but not executed.
+
+(define glob-test
+    (BindLink
+        (Glob "$op")
+        (ListLink
+            (Glob "$op")
+             (Number 10))
+
+        (QuoteLink
+        (PlusLink
+            (Unquote (Glob "$op"))
+            (Number 15)))))
+
+
+(define glob-testw
+    (BindLink
+        (Glob "$op")
+        (ListLink
+            (Glob "$op")
+             (Number 10))
+        (QuoteLink
+        (Times
+        (PlusLink
+            (Unquote (Glob "$op"))
+            (Number 15))
+            (Number 16)))))
+
+(define glob-unordered
+    (BindLink
+        (Glob "$op")
+        (ListLink
+            (Glob "$op")
+             (Number 10))
+
+        (QuoteLink
+        (UnorderedLink
+        (Times
+        (PlusLink
+            (Unquote (Glob "$op"))
+            (Number 15))
+            (Number 16))))))
+
+
+(define glob-unordered-double
+    (BindLink
+    (VariableList
+        (Glob "$op")
+        (Glob "$oc"))
+
+        (ListLink
+            (Glob "$op")
+             (Number 10)
+             (Glob "$oc"))
+
+        (QuoteLink
+        (UnorderedLink
+        (Times
+        (PlusLink
+            (Unquote (Glob "$op"))
+            (Number 15))
+            (Number 16)
+         (Unquote (Glob "$oc")))))))
+
+// glob-nodes found under nested
+// Arithmetic links are not executed but rather
+// returned as they are without substition and
+// eager-execution. i.e the hypergraph to be
+// instantiated in the below defination will be returned
+// exactly how you see it. This needs to be fixed!!
+
+(define glob-nest-unqote
+    (BindLink
+        (Glob "$op")
+        (ListLink
+            (Glob "$op")
+             (Number 10))
+
+        (Times
+        (PlusLink
+            (Glob "$op")
+            (Number 15))
+            (Number 10))
+))
+
+

@@ -77,6 +77,12 @@ public:
 	void test_pivot(void);
 	void test_multi_pivot(void);
 	void test_number(void);
+    void test_glob_quoted(void);
+    void  test_glob_nested(void);
+    void test_glob_simple(void);
+    void test_glob_unorderd(void);
+    void test_glob_double(void);
+    void test_nest_unqote(void);
 };
 
 void GlobUTest::tearDown(void)
@@ -743,4 +749,162 @@ void GlobUTest::test_number(void)
 
 	// ----
 	logger().debug("END TEST: %s", __FUNCTION__);
+}
+
+void GlobUTest::test_glob_quoted(void)
+{
+    logger().debug("BEGIN TEST: %s", __FUNCTION__);
+
+    eval->eval("(load-from-path \"tests/query/glob-basic.scm\")");
+
+    Handle love = eval->eval_h("(cog-execute! glob-test)");
+    printf("glob-you %s\n", love->to_string().c_str());
+//	TS_ASSERT_EQUALS(2, love->get_arity());
+
+    Handle response = eval->eval_h(
+            "(SetLink"
+            "  (PlusLink"
+            "    (Number \"3\")"
+            "    (Number \"15\"))"
+            "  (PlusLink"
+            "     (Number \"40\")"
+            "     (Number \"3\")"
+            "     (Number \"15\"))"
+            ")"
+    );
+    TS_ASSERT_EQUALS(love, response);
+
+    // ----
+    logger().debug("END TEST: %s", __FUNCTION__);
+}
+
+void GlobUTest::test_glob_nested(void)
+{
+    logger().debug("BEGIN TEST: %s", __FUNCTION__);
+
+    eval->eval("(load-from-path \"tests/query/glob-basic.scm\")");
+
+    Handle love = eval->eval_h("(cog-execute! glob-simple)");
+    printf("glob-you %s\n", love->to_string().c_str());
+//	TS_ASSERT_EQUALS(2, love->get_arity());
+
+    Handle response = eval->eval_h(
+            "(SetLink"
+            " (Number 18) )"
+    );
+    TS_ASSERT_EQUALS(love, response);
+
+    // ----
+    logger().debug("END TEST: %s", __FUNCTION__);
+}
+
+
+void GlobUTest::test_glob_simple(void)
+{
+    logger().debug("BEGIN TEST: %s", __FUNCTION__);
+
+    eval->eval("(load-from-path \"tests/query/glob-basic.scm\")");
+
+    Handle love = eval->eval_h("(cog-execute! glob-testw)");
+    printf("glob-you %s\n", love->to_string().c_str());
+//	TS_ASSERT_EQUALS(2, love->get_arity());
+
+    Handle response = eval->eval_h(
+            "(SetLink"
+            "(TimesLink"
+            "  (PlusLink"
+            "    (Number \"3\")"
+            "    (Number \"15\"))"
+            " (Number 16) )"
+            "(TimesLink"
+            "  (PlusLink"
+            "    (Number \"40\")"
+            "    (Number \"3\")"
+            "    (Number \"15\"))"
+            " (Number 16) ))"
+    );
+    TS_ASSERT_EQUALS(love, response);
+
+    // ----
+    logger().debug("END TEST: %s", __FUNCTION__);
+}
+
+void GlobUTest::test_glob_unorderd(void)
+{
+    logger().debug("BEGIN TEST: %s", __FUNCTION__);
+
+    eval->eval("(load-from-path \"tests/query/glob-basic.scm\")");
+
+    Handle love = eval->eval_h("(cog-execute! glob-unordered)");
+    printf("glob-you %s\n", love->to_string().c_str());
+//	TS_ASSERT_EQUALS(2, love->get_arity());
+
+    Handle response = eval->eval_h(
+            "(SetLink"
+            "(UnorderedLink"
+            "(TimesLink"
+            "  (PlusLink"
+            "    (Number \"3\")"
+            "    (Number \"15\"))"
+            " (Number 16) ))"
+            "(UnorderedLink"
+            "(TimesLink"
+            "  (PlusLink"
+            "    (Number \"40\")"
+            "    (Number \"3\")"
+            "    (Number \"15\"))"
+            " (Number 16) )))"
+    );
+    TS_ASSERT_EQUALS(love, response);
+
+    // ----
+    logger().debug("END TEST: %s", __FUNCTION__);
+}
+void GlobUTest::test_glob_double(void)
+{
+    logger().debug("BEGIN TEST: %s", __FUNCTION__);
+
+    eval->eval("(load-from-path \"tests/query/glob-basic.scm\")");
+
+    Handle love = eval->eval_h("(cog-execute!  glob-unordered-double)");
+    std::string test = oc_to_string(love);
+    printf("glob-you %s\n", love->to_string().c_str());
+//	TS_ASSERT_EQUALS(2, love->get_arity());
+
+    Handle response = eval->eval_h(
+            "(SetLink"
+            "(UnorderedLink"
+            "(TimesLink"
+            "  (PlusLink"
+            "    (Number \"3\")"
+            "    (Number \"15\"))"
+            " (Number 16)"
+            " (Number 40))"
+            "))"
+    );
+    TS_ASSERT_EQUALS(love, response);
+
+    // ----
+    logger().debug("END TEST: %s", __FUNCTION__);
+}
+
+void GlobUTest::test_nest_unqote(void) {
+    logger().debug("BEGIN TEST: %s", __FUNCTION__);
+
+    eval->eval("(load-from-path \"tests/query/glob-basic.scm\")");
+
+    Handle love = eval->eval_h("(cog-execute!  glob-nest-unqote)");
+
+    std::string test = oc_to_string(love);
+    printf("glob-you %s\n", love->to_string().c_str());
+	//TS_ASSERT_EQUALS(2, love->get_arity());
+
+    Handle response = eval->eval_h(
+            "(SetLink"
+            " (NumberNode 180)"
+            "(NumberNode 580))");
+    TS_ASSERT_EQUALS(love, response);
+
+    // ----
+    logger().debug("END TEST: %s", __FUNCTION__);
 }
