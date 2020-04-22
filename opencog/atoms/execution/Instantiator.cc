@@ -284,7 +284,7 @@ Handle Instantiator::walk_tree(const Handle& expr, bool silent)
 		// halt infinite regress
 		if (_halt)
 			return expr;
-
+        if ( GLOB_NODE == t) _isGlob = true;
 		_halt = true;
 		Handle hgnd(walk_tree(it->second, silent));
 		_halt = false;
@@ -505,10 +505,25 @@ mere_recursive_call:
 	HandleSeq oset_results;
 	bool changed = walk_sequence(oset_results, expr->getOutgoingSet(), silent);
 	if (changed)
+	// Glob node is replaced by a listlink in oset_results
+	// so we should make sure not create a pluslink which
+    // contains a listlink. Otherwise creates an error
 	{
+        if ( _isGlob and nameserver().isA(t, ARITHMETIC_LINK)) {
+            HandleSeq tmp;
+            for (Handle &h : oset_results) {
+                if (h->get_type() == LIST_LINK) {
+                    for (const Handle& gloe: h->getOutgoingSet())
+                         tmp.push_back(gloe);
+                }
+                else {
+                    tmp.push_back(h);}
+            }
+            oset_results = tmp;
+        }
 		Handle subl(createLink(std::move(oset_results), t));
 		subl->copyValues(expr);
-		return subl;
+        return subl;
 	}
 	return expr;
 }
@@ -579,11 +594,18 @@ ValuePtr Instantiator::instantiate(const Handle& expr,
 		{
 			Type th = h->get_type();
 			if (nameserver().isA(th, VALUE_OF_LINK) or
-			    nameserver().isA(th, SET_VALUE_LINK) or
-			    nameserver().isA(th, ARITHMETIC_LINK))
+			    nameserver().isA(th, SET_VALUE_LINK))
 			{
-			   oset_results.push_back(h);
+			    oset_results.push_back(h);
 			}
+			// Let's make sure th link does not contain globenode or variable node
+			// before pushing to oset_results. Otherwise will simply push the entire
+			// link to oset_result without substitution and execution!!
+			// This should take care of glob found in  nested arithmetic links.
+			else if (nameserver().isA(th, ARITHMETIC_LINK)) {
+            ValuePtr vps(instantiate(h, vars, true));
+            oset_results.push_back(HandleCast(vps));
+            }
 			else
 			{
 				Handle hg(walk_tree(h, silent));
@@ -599,8 +621,8 @@ ValuePtr Instantiator::instantiate(const Handle& expr,
 					oset_results.push_back(hg);
 			}
 		}
-		Handle flp(createLink(std::move(oset_results), t));
-		ValuePtr pap(flp->execute(_as, silent));
+        Handle flp(createLink(std::move(oset_results), t));
+        ValuePtr pap(flp->execute(_as, silent));
 		if (_as and pap->is_atom())
 			return _as->add_atom(HandleCast(pap));
 		return pap;
@@ -680,6 +702,7 @@ ValuePtr Instantiator::execute(const Handle& expr, bool silent)
 
 	// XXX FIXME, since the variable map is empty, maybe we can do
 	// something more efficient, here?
+
 	ValuePtr vp(instantiate(expr, GroundingMap(), silent));
 
 	return vp;

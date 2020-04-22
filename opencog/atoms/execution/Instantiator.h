@@ -75,7 +75,7 @@ private:
 	 * _avoid_discarding_quotes_level
 	 */
 	bool _needless_quotation;
-
+    bool _isGlob = false;
 	/**
 	 * Recursively walk a tree starting with the root of the
 	 * hypergraph to instantiate (typically an ExecutionOutputLink).
