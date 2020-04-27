@@ -404,9 +404,9 @@
             (Number 3)
             (Number 15))))
 
-// This is ment to test glob nodes found under
-// QuoteLink. The globe node should be grounded
-// and subsituted but not executed.
+;; This is ment to test glob nodes found under
+;; QuoteLink. The globe node should be grounded
+;; and subsituted but not executed.
 
 (define glob-test
     (BindLink
@@ -470,12 +470,12 @@
             (Number 16)
          (Unquote (Glob "$oc")))))))
 
-// glob-nodes found under nested
-// Arithmetic links are not executed but rather
-// returned as they are without substition and
-// eager-execution. i.e the hypergraph to be
-// instantiated in the below defination will be returned
-// exactly how you see it. This needs to be fixed!!
+;; glob-nodes found under nested
+;; Arithmetic links are not executed but rather
+;; returned as they are without substition and
+;; eager-execution. i.e the hypergraph to be
+;; instantiated in the below defination will be returned
+;; exactly how you see it. This needs to be fixed!!
 
 (define glob-nest-unqote
     (BindLink
