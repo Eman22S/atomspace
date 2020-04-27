@@ -603,8 +603,8 @@ ValuePtr Instantiator::instantiate(const Handle& expr,
 			// link to oset_result without substitution and execution!!
 			// This should take care of glob found in  nested arithmetic links.
 			else if (nameserver().isA(th, ARITHMETIC_LINK)) {
-            ValuePtr vps(instantiate(h, vars, true));
-            oset_results.push_back(HandleCast(vps));
+			    ValuePtr vps(instantiate(h, vars, true));
+			    oset_results.push_back(HandleCast(vps));
             }
 			else
 			{
@@ -621,8 +621,9 @@ ValuePtr Instantiator::instantiate(const Handle& expr,
 					oset_results.push_back(hg);
 			}
 		}
-        Handle flp(createLink(std::move(oset_results), t));
-        ValuePtr pap(flp->execute(_as, silent));
+
+		Handle flp(createLink(std::move(oset_results), t));
+		ValuePtr pap(flp->execute(_as, silent));
 		if (_as and pap->is_atom())
 			return _as->add_atom(HandleCast(pap));
 		return pap;
