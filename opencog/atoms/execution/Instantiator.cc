@@ -590,31 +590,38 @@ ValuePtr Instantiator::instantiate(const Handle& expr,
 		// these might be working with values, not atoms.
 		//
 		HandleSeq oset_results;
-		for (const Handle& h: expr->getOutgoingSet()) {
-            Type th = h->get_type();
-            if (nameserver().isA(th, VALUE_OF_LINK) or
-                nameserver().isA(th, SET_VALUE_LINK)) {
-                oset_results.push_back(h);
+		for (const Handle& h: expr->getOutgoingSet())
+		{
+			Type th = h->get_type();
+			if (nameserver().isA(th, VALUE_OF_LINK) or
+			    nameserver().isA(th, SET_VALUE_LINK))
+			{
+			    oset_results.push_back(h);
+			}
+			// Let's make sure th link does not contain globenode or variable node
+			// before pushing to oset_results. Otherwise will simply push the entire
+			// link to oset_result without substitution and execution!!
+			// This should take care of glob found in  nested arithmetic links.
+			else if (nameserver().isA(th, ARITHMETIC_LINK)) {
+			    ValuePtr vps(instantiate(h, vars, true));
+			    oset_results.push_back(HandleCast(vps));
             }
-                // Let's make sure th link does not contain globenode or variable node
-                // before pushing to oset_results. Otherwise will simply push the entire
-                // link to oset_result without substitution and execution!!
-                // This should take care of glob found in  nested arithmetic links.
-            else if (nameserver().isA(th, ARITHMETIC_LINK)) {
-                ValuePtr vps(instantiate(h, vars, true));
-                oset_results.push_back(HandleCast(vps));
-            } else {
-                Handle hg(walk_tree(h, silent));
+			else
+			{
+				Handle hg(walk_tree(h, silent));
 
-                // Globs will return a matching list. Arithmetic
-                // links will choke on lists, so expand them.
-                if (GLOB_NODE == h->get_type()) {
-                    for (const Handle &gg : hg->getOutgoingSet())
-                        oset_results.push_back(gg);
-                } else
-                    oset_results.push_back(hg);
-            }
-        }
+				// Globs will return a matching list. Arithmetic
+				// links will choke on lists, so expand them.
+				if (GLOB_NODE == h->get_type())
+				{
+					for (const Handle& gg : hg->getOutgoingSet())
+						oset_results.push_back(gg);
+				}
+				else
+					oset_results.push_back(hg);
+			}
+		}
+
 		Handle flp(createLink(std::move(oset_results), t));
 		ValuePtr pap(flp->execute(_as, silent));
 		if (_as and pap->is_atom())
